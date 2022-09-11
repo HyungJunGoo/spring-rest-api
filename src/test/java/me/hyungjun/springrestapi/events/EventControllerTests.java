@@ -46,6 +46,9 @@ public class EventControllerTests {
                 .basePrice(100)
                 .maxPrice(200)
                 .location("강남역 D2 스타트업 팩토리")
+                .eventStatus(EventStatus.STARTED)
+                .id(100)
+                .free(true)
                 .build();
         event.setId(10);
 
@@ -62,5 +65,33 @@ public class EventControllerTests {
                 .andExpect(jsonPath("id").value(Matchers.not(100)))
                 .andExpect(jsonPath("free").value(Matchers.not(true)))
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()));
+    }
+
+    @Test
+    public void createEvent_bad_request() throws Exception {
+
+        Event event = Event.builder()
+                .name("Spring")
+                .description("REST API Development with Spring")
+                .beginEnrollmentDateTime(LocalDateTime.of(2022, 9, 01, 12, 00))
+                .closeEnrollmentDateTime(LocalDateTime.of(2022, 9, 02, 12, 00))
+                .beginEventDateTime(LocalDateTime.of(2022, 9, 03, 12, 00))
+                .endEventDateTime(LocalDateTime.of(2022, 9, 04, 12, 00))
+                .basePrice(100)
+                .maxPrice(200)
+                .location("강남역 D2 스타트업 팩토리")
+                .eventStatus(EventStatus.STARTED)
+                .id(100)
+                .free(true)
+                .build();
+        event.setId(10);
+
+        mockMvc.perform(post("/api/events/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON)
+                        .content(objectMapper.writeValueAsString(event))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 }
