@@ -2,13 +2,17 @@ package me.hyungjun.springrestapi.events;
 
 import lombok.*;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter @Setter @Builder
 @AllArgsConstructor @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
+@Entity
 public class Event {
 
+    @Id @GeneratedValue
+    private Integer id;
     private String name;
     private String description;
     private LocalDateTime beginEnrollmentDateTime;
@@ -20,8 +24,8 @@ public class Event {
     private int maxPrice;
     private int limitOfEnrollment;
 
-    private Integer id;
     private Boolean offline;
     private Boolean free;
+    @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
 }
