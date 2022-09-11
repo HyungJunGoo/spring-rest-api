@@ -2,6 +2,7 @@ package me.hyungjun.springrestapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,6 +30,7 @@ public class EventControllerTests {
 
 
     @Test
+    @DisplayName("정상적으로 이벤트를 생성하는 테스트")
     public void createEvent() throws Exception {
 
         EventDto event = EventDto.builder()
@@ -60,6 +62,7 @@ public class EventControllerTests {
     }
 
     @Test
+    @DisplayName("잘못된 필드의 값을 요청했을 때 bad request 테스트")
     public void createEvent_Bad_Request() throws Exception {
 
         Event event = Event.builder()
@@ -88,8 +91,32 @@ public class EventControllerTests {
     }
 
     @Test
+    @DisplayName("비어있는 값을 요청했을 때 bad request 테스트")
     public void createEvent_Bad_Request_Empty_Input() throws Exception {
         EventDto eventDto = EventDto.builder().build();
+
+        mockMvc.perform(post("/api/events")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    @DisplayName("잘못된 값을 요청했을 때 bad request 테스트")
+    public void createEvent_Bad_Request_Wrong_Input() throws Exception {
+        EventDto eventDto = EventDto.builder()
+                .name("Spring")
+                .description("REST API Development with Spring")
+                .beginEnrollmentDateTime(LocalDateTime.of(2022, 9, 02, 12, 00))
+                .closeEnrollmentDateTime(LocalDateTime.of(2022, 9, 01, 12, 00))
+                .beginEventDateTime(LocalDateTime.of(2022, 9, 04, 12, 00))
+                .endEventDateTime(LocalDateTime.of(2022, 9, 03, 12, 00))
+                .basePrice(100)
+                .maxPrice(200)
+                .location("강남역 D2 스타트업 팩토리")
+                .limitOfEnrollment(10)
+                .build();
 
         mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON)
