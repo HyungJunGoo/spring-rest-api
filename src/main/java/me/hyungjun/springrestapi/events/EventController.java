@@ -1,6 +1,8 @@
 package me.hyungjun.springrestapi.events;
 
 import lombok.RequiredArgsConstructor;
+import me.hyungjun.springrestapi.common.ErrorsResource;
+import me.hyungjun.springrestapi.index.IndexController;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -17,6 +19,7 @@ import javax.validation.Valid;
 import java.net.URI;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Controller
 @RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE+";charset=utf8")
@@ -34,7 +37,7 @@ public class EventController {
         }
         eventValidator.validate(eventDto, errors);
         if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
+            return ResponseEntity.badRequest().body(new ErrorsResource(errors));
         }
         Event event = modelMapper.map(eventDto, Event.class);
         event.update();
