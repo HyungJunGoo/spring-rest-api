@@ -4,13 +4,19 @@ import lombok.RequiredArgsConstructor;
 import me.hyungjun.springrestapi.common.ErrorsResource;
 import me.hyungjun.springrestapi.index.IndexController;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,5 +58,14 @@ public class EventController {
                 Link.of("/docs/index.html#resources-events-create").withRel("profile")
         );
         return ResponseEntity.created(createdUri).body(eventEntityModel);
+    }
+
+    @GetMapping
+    public ResponseEntity queryEvents(Pageable pageable, PagedResourcesAssembler<Event> assembler) {
+        Page<Event> page = eventRepository.findAll(pageable);
+        PagedModel<EntityModel<Event>> pagedModel = assembler.toModel(page,
+                event -> EntityModel.of(event,linkTo(EventController.class).slash(event.getId()).withSelfRel()));
+        pagedModel.add(Link.of("/docs/index.html#resources-events-list").withRel("profile"));
+        return ResponseEntity.ok(pagedModel);
     }
 }
