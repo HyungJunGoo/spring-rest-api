@@ -15,6 +15,7 @@ import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
@@ -77,6 +78,31 @@ public class EventController {
         EntityModel<Event> eventEntityModel = EntityModel.of(event,
                 linkTo(EventController.class).slash(event.getId()).withSelfRel(), Link.of("/docs/index" +
                         ".html#resources-events-get").withRel("profile"));
+        return ResponseEntity.ok(eventEntityModel);
+    }
+
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity updateEvent(@PathVariable Integer id,
+                                      @RequestBody @Valid EventDto eventDto, Errors errors) {
+        Optional<Event> optionalEvent = eventRepository.findById(id);
+        if (optionalEvent.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (errors.hasErrors()) {
+            return ResponseEntity.badRequest().build();
+        }
+        eventValidator.validate(eventDto, errors);
+        if (errors.hasErrors()) {
+            return ResponseEntity.badRequest().body(new ErrorsResource(errors));
+        }
+        Event existingEvent = optionalEvent.get();
+        modelMapper.map(eventDto, existingEvent);
+        Event savedEvent = eventRepository.save(existingEvent);
+        EntityModel<Event> eventEntityModel = EntityModel.of(savedEvent,
+                linkTo(EventController.class).slash(savedEvent.getId()).withSelfRel(), Link.of("/docs/index" +
+                        ".html#resources-events-update"));
+
         return ResponseEntity.ok(eventEntityModel);
     }
 }
